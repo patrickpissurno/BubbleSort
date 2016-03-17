@@ -12,6 +12,8 @@ using System.Windows.Forms;
 
 namespace BubbleSort
 {
+    //Carlos Eduardo / Patrick Pissurno / Thiago Avena
+    //3003
     public partial class Form1 : Form
     {
         Thread backgroundWorker;
