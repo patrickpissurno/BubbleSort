@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,8 +18,10 @@ namespace BubbleSort
         {
             InitializeComponent();
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            chart1.Series[0].LegendText = "Temp(ms) x Quantidade";
-            GenerateGraph();
+            chart1.Series[0].LegendText = "Tempo(ms) x Quantidade";
+            Thread t = new Thread(GenerateGraph);
+            t.IsBackground = true;
+            t.Start();
         }
 
         private int[] GenerateData(int amount)
@@ -32,7 +35,10 @@ namespace BubbleSort
 
         private void GenerateGraph()
         {
-            chart1.Series[0].Points.Clear();
+            this.Invoke(new MethodInvoker(() =>
+            {
+                chart1.Series[0].Points.Clear();
+            }));
             for(int i = 10; i < 2000; i += 5)
             {
                 int[] data = GenerateData(i);
@@ -40,7 +46,10 @@ namespace BubbleSort
                 sw.Start();
                 data = BubbleSort(data);
                 sw.Stop();
-                chart1.Series[0].Points.AddXY(i, sw.Elapsed.TotalMilliseconds);
+                this.Invoke(new MethodInvoker(() =>
+                {
+                    chart1.Series[0].Points.AddXY(i, sw.Elapsed.TotalMilliseconds);
+                }));
             }
         }
 
