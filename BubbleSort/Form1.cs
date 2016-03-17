@@ -14,14 +14,14 @@ namespace BubbleSort
 {
     public partial class Form1 : Form
     {
+        Thread backgroundWorker;
+        bool isRunning = false;
+        int currentSeries = 0;
         public Form1()
         {
             InitializeComponent();
-            chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            chart1.Series[0].LegendText = "Tempo(ms) x Quantidade";
-            Thread t = new Thread(GenerateGraph);
-            t.IsBackground = true;
-            t.Start();
+            chart1.Series.Clear();
+            Restart();
         }
 
         private int[] GenerateData(int amount)
@@ -37,20 +37,24 @@ namespace BubbleSort
         {
             this.Invoke(new MethodInvoker(() =>
             {
-                chart1.Series[0].Points.Clear();
+                chart1.Series.Add("Execution: " + currentSeries);
+                chart1.Series[currentSeries].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+                chart1.Series[currentSeries].Points.Clear();
             }));
-            for(int i = 10; i < 2000; i += 5)
+            Stopwatch sw = new Stopwatch();
+            for(int i = 10; i <= 2000; i += 5)
             {
                 int[] data = GenerateData(i);
-                var sw = new Stopwatch();
-                sw.Start();
+                sw.Restart();
                 data = BubbleSort(data);
                 sw.Stop();
                 this.Invoke(new MethodInvoker(() =>
                 {
-                    chart1.Series[0].Points.AddXY(i, sw.Elapsed.TotalMilliseconds);
+                    chart1.Series[currentSeries].Points.AddXY(i, sw.Elapsed.TotalMilliseconds);
                 }));
             }
+            currentSeries++;
+            isRunning = false;
         }
 
         private int[] BubbleSort(int[] data)
@@ -68,6 +72,22 @@ namespace BubbleSort
                 }
             }
             return data;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Restart();
+        }
+
+        private void Restart()
+        {
+            if(!isRunning)
+            {
+                isRunning = true;
+                backgroundWorker = new Thread(GenerateGraph);
+                backgroundWorker.IsBackground = true;
+                backgroundWorker.Start();
+            }
         }
     }
 }
